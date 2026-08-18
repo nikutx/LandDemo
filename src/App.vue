@@ -41,6 +41,12 @@ onMounted(() => {
   store.select(shared ? { lat, lng } : DEFAULT_POINT)
 })
 
+// Choosing a site — from the map, a suggestion, or the shortlist itself — means
+// wanting to see that site, so the shortlist gets out of the way of the answer.
+watch(point, () => {
+  shortlistOpen.value = false
+})
+
 watch(point, (next) => {
   if (!next) return
   const url = new URL(window.location.href)
