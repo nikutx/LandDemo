@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { appraise, scoreConstraints, verdictFor } from './appraisal'
+import { appraise, describeLocation, scoreConstraints, verdictFor } from './appraisal'
 import { DATASET_BY_ID } from './datasets'
 import type { Constraint, SiteLookup } from './planningData'
 
@@ -56,6 +56,31 @@ describe('scoreConstraints', () => {
     )
     expect(stacked).toBeLessThanOrEqual(100)
     expect(stacked).toBeGreaterThan(scoreConstraints([constraint('green-belt')]))
+  })
+})
+
+describe('describeLocation', () => {
+  const base = { postcode: null, ward: null, region: null, constituency: null }
+
+  it('names the parish and the district when they differ', () => {
+    expect(describeLocation({ ...base, parish: 'Cirencester', district: 'Cotswold' })).toBe(
+      'Cirencester, Cotswold',
+    )
+  })
+
+  it('drops an unparished-area placeholder rather than repeating the district', () => {
+    expect(
+      describeLocation({
+        ...base,
+        parish: 'Bath and North East Somerset, unparished area',
+        district: 'Bath and North East Somerset',
+      }),
+    ).toBe('Bath and North East Somerset')
+  })
+
+  it('falls back to whatever is known', () => {
+    expect(describeLocation({ ...base, parish: null, district: 'Cotswold' })).toBe('Cotswold')
+    expect(describeLocation({ ...base, parish: null, district: null })).toBe('')
   })
 })
 

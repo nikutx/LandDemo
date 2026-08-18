@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useSiteStore } from '../stores/site'
 import { CONSTRAINT_DATASETS } from '../lib/datasets'
-import type { Verdict } from '../lib/appraisal'
+import { describeLocation, type Verdict } from '../lib/appraisal'
 
 const datasetCount = CONSTRAINT_DATASETS.length
 
@@ -31,12 +31,20 @@ const ringOffset = computed(() =>
 const place = computed(() => {
   const context = lookup.value?.context
   if (!context) return null
-  return [context.parish, context.district].filter(Boolean).join(', ') || context.region
+  return describeLocation(context) || context.region
 })
 
 const coordinates = computed(() =>
   point.value ? `${point.value.lat.toFixed(5)}, ${point.value.lng.toFixed(5)}` : '',
 )
+
+const copied = ref(false)
+
+async function copyLink() {
+  await navigator.clipboard.writeText(window.location.href)
+  copied.value = true
+  setTimeout(() => (copied.value = false), 1800)
+}
 </script>
 
 <template>
@@ -104,7 +112,27 @@ const coordinates = computed(() =>
             />
             <div class="min-w-0">
               <p class="text-sm font-medium text-slate-900">{{ c.dataset.label }}</p>
-              <p class="truncate text-sm text-slate-500">{{ c.name }}</p>
+              <a
+                v-if="c.entity"
+                class="group inline-flex max-w-full items-center gap-1 text-sm text-slate-500 transition hover:text-sky-700"
+                :href="`https://www.planning.data.gov.uk/entity/${c.entity}`"
+                target="_blank"
+                rel="noopener"
+                :title="`Open ${c.name} on planning.data.gov.uk`"
+              >
+                <span class="truncate group-hover:underline">{{ c.name }}</span>
+                <svg
+                  viewBox="0 0 24 24"
+                  class="h-3 w-3 shrink-0 opacity-50"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <path d="M14 5h5v5M19 5l-7 7M18 13v6H5V6h6" />
+                </svg>
+              </a>
+              <p v-else class="truncate text-sm text-slate-500">{{ c.name }}</p>
               <p class="mt-0.5 text-xs leading-relaxed text-slate-400">{{ c.dataset.hint }}</p>
             </div>
           </li>
@@ -144,6 +172,30 @@ const coordinates = computed(() =>
             {{ step }}
           </li>
         </ol>
+      </section>
+
+      <section class="border-t border-slate-200 px-6 py-5">
+        <button
+          class="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+          @click="copyLink"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+          >
+            <path
+              d="M10 13a4 4 0 0 0 5.66 0l3-3A4 4 0 0 0 13 4.34l-1.5 1.5M14 11a4 4 0 0 0-5.66 0l-3 3A4 4 0 0 0 11 19.66l1.5-1.5"
+            />
+          </svg>
+          {{ copied ? 'Link copied' : 'Copy a link to this site' }}
+        </button>
+        <p class="mt-2 text-center text-xs text-slate-400">
+          Opens on this exact point for whoever you send it to.
+        </p>
       </section>
 
       <footer class="mt-auto border-t border-slate-200 px-6 py-4 text-xs text-slate-400">

@@ -54,10 +54,23 @@ export function verdictFor(score: number): { verdict: Verdict; headline: string 
   return { verdict: band.verdict, headline: band.headline }
 }
 
+/**
+ * Name the place without repeating itself. Where there is no civil parish the
+ * data still returns one, as "<district>, unparished area", which next to the
+ * district reads as the same name twice.
+ */
+export function describeLocation(context: SiteContext): string {
+  const district = context.district?.trim() || ''
+  const parish = context.parish?.trim() || ''
+  const parishIsUseful =
+    parish && !/unparished/i.test(parish) && parish !== district && !parish.includes(district)
+
+  return [parishIsUseful ? parish : '', district].filter(Boolean).join(', ')
+}
+
 function describePlace(context: SiteContext): string {
-  const parts = [context.parish, context.district].filter(Boolean)
-  if (parts.length === 0) return 'This site'
-  return `This site in ${parts.join(', ')}`
+  const place = describeLocation(context)
+  return place ? `This site in ${place}` : 'This site'
 }
 
 function listNames(constraints: Constraint[]): string {

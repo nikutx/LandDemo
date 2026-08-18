@@ -6,6 +6,7 @@ import SitePanel from './components/SitePanel.vue'
 import TracePanel from './components/TracePanel.vue'
 import InfoOverlay, { type InfoTab } from './components/InfoOverlay.vue'
 import { DEFAULT_POINT, useSiteStore } from './stores/site'
+import { EXAMPLE_SITES } from './lib/examples'
 
 const store = useSiteStore()
 const { point, loading } = storeToRefs(store)
@@ -102,6 +103,23 @@ watch(point, (next) => {
               Code
             </a>
           </nav>
+        </div>
+
+        <div class="pointer-events-auto mt-2 flex max-w-3xl flex-wrap items-center gap-1.5">
+          <span
+            class="rounded-lg bg-white/90 px-2.5 py-1.5 text-[11px] font-medium uppercase tracking-wide text-slate-400 shadow backdrop-blur"
+          >
+            Try
+          </span>
+          <button
+            v-for="example in EXAMPLE_SITES"
+            :key="example.label"
+            class="rounded-lg bg-white/90 px-2.5 py-1.5 text-xs text-slate-600 shadow backdrop-blur transition hover:bg-white hover:text-slate-900"
+            :title="example.hint"
+            @click="store.select(example.point)"
+          >
+            {{ example.label }}
+          </button>
         </div>
       </div>
 
