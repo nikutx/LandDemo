@@ -15,6 +15,9 @@ const ICONS = {
   scatter: 'M4 6h5M4 12h9M4 18h6M17 5l3 3-3 3M20 8h-6',
   jargon: 'M4 7h16M4 12h10M4 17h7M15 15l5 5M20 15l-5 5',
   clock: 'M12 7v5l3 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z',
+  alone: 'M4 19h4V9H4v10ZM10 19h4V5h-4v14ZM16 19h4v-6h-4v6Z',
+  rank: 'M4 7h9M4 12h6M4 17h12M17 4v9M17 13l-2.5-2.5M17 13l2.5-2.5',
+  compass: 'M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18ZM15 9l-2 4-4 2 2-4 4-2Z',
   click: 'M9 4v6M4 9h6M14.5 12.5 21 15l-3 1.5L16.5 20l-2-7.5Z',
   speech: 'M4 5h16v10H9l-5 4V5Z',
   link: 'M10 13a4 4 0 0 0 5.66 0l3-3A4 4 0 0 0 13 4.34l-1.5 1.5M14 11a4 4 0 0 0-5.66 0l-3 3A4 4 0 0 0 11 19.66l1.5-1.5',
@@ -36,6 +39,11 @@ const problems = [
     title: 'Costs an afternoon',
     body: '“Is this site worth a second look?” shouldn’t need a specialist.',
   },
+  {
+    icon: ICONS.alone,
+    title: 'One site at a time',
+    body: 'Nobody appraises one site. The real question is which of several to pursue.',
+  },
 ]
 
 const answers = [
@@ -50,16 +58,26 @@ const answers = [
     body: 'The binding constraint, who decides, and what to do next.',
   },
   {
+    icon: ICONS.rank,
+    title: 'A shortlist, ranked',
+    body: 'Save candidates and they order themselves, easiest first.',
+  },
+  {
+    icon: ICONS.compass,
+    title: 'It looks around for you',
+    body: 'Ask what is less constrained nearby and it samples the land around you.',
+  },
+  {
     icon: ICONS.link,
-    title: 'Every site is a link',
-    body: 'Paste it to a colleague and it opens on the same spot.',
+    title: 'Everything is a link',
+    body: 'Paste a site, or the whole shortlist, to a colleague.',
   },
 ]
 
 const stats = [
-  { value: '1,652', label: 'lines of code' },
-  { value: '~2 hrs', label: 'empty folder to live' },
-  { value: '12', label: 'unit tests, green' },
+  { value: '2,681', label: 'lines of code' },
+  { value: '~4 hrs', label: 'empty folder to live' },
+  { value: '17', label: 'unit tests, green' },
   { value: '16', label: 'datasets queried' },
 ]
 
@@ -69,6 +87,7 @@ const pipeline = [
   { step: 'find_constraints', detail: '16 datasets, one request', tone: 'sky' },
   { step: 'appraise_site', detail: 'score + plain English', tone: 'emerald' },
   { step: 'Boundaries', detail: 'drawn after the answer', tone: 'slate' },
+  { step: 'find_easier_nearby', detail: 'on request: 12 samples around you', tone: 'sky' },
 ]
 
 const perf = [
@@ -80,7 +99,7 @@ const perf = [
 const stack = [
   { name: 'Vue 3', role: 'Composition API, five components' },
   { name: 'TypeScript', role: 'typed to the API edge' },
-  { name: 'Pinia', role: 'one store, cancels stale lookups' },
+  { name: 'Pinia', role: 'two stores; lookups cancel, shortlist persists' },
   { name: 'Tailwind v4', role: 'no component library' },
   { name: 'MapLibre GL', role: 'vector map + GeoJSON overlays' },
   { name: 'Vite', role: 'build, dev server, CI deploy' },
@@ -159,13 +178,16 @@ watch(
             </h2>
             <p class="mt-4 max-w-2xl text-[16px] leading-relaxed text-slate-400">
               Click any point in Great Britain. In about a second you get what it sits inside, which
-              designation actually binds, who would decide an application, and what to do next.
+              designation actually binds, who would decide an application, and what to do next. Ask
+              it to look around and it samples the land nearby for anywhere less constrained. Save
+              the ones worth considering and they rank themselves, so a morning of clicking around
+              ends with an ordered list rather than sixteen browser tabs.
             </p>
 
             <h3 class="mt-10 text-sm font-semibold uppercase tracking-wide text-slate-500">
               Why it's hard today
             </h3>
-            <div class="mt-4 grid gap-3 sm:grid-cols-3">
+            <div class="mt-4 grid gap-3 sm:grid-cols-2">
               <div
                 v-for="item in problems"
                 :key="item.title"
@@ -191,7 +213,7 @@ watch(
             <h3 class="mt-9 text-sm font-semibold uppercase tracking-wide text-slate-500">
               What this does instead
             </h3>
-            <div class="mt-4 grid gap-3 sm:grid-cols-3">
+            <div class="mt-4 grid gap-3 sm:grid-cols-2">
               <div
                 v-for="item in answers"
                 :key="item.title"
@@ -290,7 +312,9 @@ watch(
               </li>
             </ol>
             <p class="mt-3 text-sm text-slate-500">
-              Steps 2 and 3 run together, and step 5 runs after you can already read the answer.
+              Steps 2 and 3 run together, step 5 runs after you can already read the answer, and
+              step 6 only happens if you ask — twelve more appraisals, four at a time, so a public
+              API is never hit harder than a person browsing.
             </p>
 
             <h3 class="mt-10 text-sm font-semibold uppercase tracking-wide text-slate-500">

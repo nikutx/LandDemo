@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref, shallowRef } from 'vue'
 import { appraise, type Appraisal } from '../lib/appraisal'
+import { scanNearby, type ScanCandidate } from '../lib/scan'
 import {
   fetchBoundaries,
   geocode,
@@ -20,6 +21,14 @@ export const useSiteStore = defineStore('site', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
+  /** Results of looking for easier land nearby, and how that search is going. */
+  const candidates = shallowRef<ScanCandidate[]>([])
+  const scanning = ref(false)
+  const scanProgress = ref(0)
+  const scanRadius = ref(2000)
+  const scanned = ref(false)
+  let scanController: AbortController | null = null
+
   /** Lets a newer click cancel the in-flight lookup of an older one. */
   let inFlight: AbortController | null = null
 
@@ -30,6 +39,12 @@ export const useSiteStore = defineStore('site', () => {
     inFlight?.abort()
     const controller = new AbortController()
     inFlight = controller
+
+    // A new site invalidates any search for easier land around the old one.
+    scanController?.abort()
+    candidates.value = []
+    scanning.value = false
+    scanned.value = false
 
     point.value = next
     loading.value = true
@@ -72,5 +87,54 @@ export const useSiteStore = defineStore('site', () => {
     }
   }
 
-  return { point, lookup, boundaries, appraisal, loading, error, hasResult, select, search }
+  /** Look around the current site for land that is less constrained than it is. */
+  async function findEasierNearby() {
+    const origin = point.value
+    const current = appraisal.value
+    if (!origin || !current || scanning.value) return
+
+    scanController?.abort()
+    const controller = new AbortController()
+    scanController = controller
+
+    scanning.value = true
+    scanned.value = false
+    scanProgress.value = 0
+    candidates.value = []
+
+    try {
+      const found = await scanNearby(origin, current.score, {
+        radius: scanRadius.value,
+        signal: controller.signal,
+        onProgress: (done, total) => {
+          if (!controller.signal.aborted) scanProgress.value = Math.round((done / total) * 100)
+        },
+      })
+      if (controller.signal.aborted) return
+      candidates.value = found
+      scanned.value = true
+    } catch {
+      if (!controller.signal.aborted) error.value = 'Could not search the surrounding area'
+    } finally {
+      if (!controller.signal.aborted) scanning.value = false
+    }
+  }
+
+  return {
+    point,
+    lookup,
+    boundaries,
+    appraisal,
+    loading,
+    error,
+    hasResult,
+    candidates,
+    scanning,
+    scanProgress,
+    scanRadius,
+    scanned,
+    select,
+    search,
+    findEasierNearby,
+  }
 })

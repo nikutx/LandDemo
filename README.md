@@ -2,12 +2,12 @@
 
 Click anywhere in Great Britain and get an instant, plain-English planning appraisal of that
 point: which designations it sits inside, how constrained it is, who decides an application,
-and what to do next.
+and what to do next. Save the sites worth considering and they rank themselves, easiest first.
 
-Everything comes from government open data at request time — nothing is stored, and there is
-no API key to obtain.
+Everything comes from government open data at request time. There is no back end and no API
+key; the shortlist is the only thing kept, and it stays in your own browser.
 
-**Live demo:** _(deploy URL)_
+**Live demo: [nikutx.github.io/LandDemo](https://nikutx.github.io/LandDemo/)**
 
 ---
 
@@ -18,11 +18,14 @@ kind of domain where a good interface earns its keep: the underlying facts are p
 they are scattered across sixteen datasets and written for planners rather than for the people
 making decisions.
 
-The interesting part is not the map. It is that the same engine has two faces:
+Two things make it a tool rather than a readout:
 
-1. **A web app** — the panel you see, built for someone who is not a planning consultant.
-2. **An agent tool layer** — the identical logic described as callable tools with JSON Schema,
-   so an AI assistant can ask the same questions and get structured answers back.
+1. **It answers the question people actually ask.** Nobody appraises a single site — they
+   triage several. Saved sites are ranked least constrained first, so an hour of clicking
+   around produces an order to work through instead of sixteen browser tabs.
+2. **The same engine has two faces.** The panel is one caller; the other is the identical
+   logic described as callable tools with JSON Schema, so an AI assistant can ask the same
+   questions and get structured answers back.
 
 Open the *Agent tool calls* panel in the bottom-left to see the calls behind the appraisal on
 screen, and the tool manifest beside them.
@@ -89,17 +92,26 @@ outcomes, and none of those are in this demo.
 ```
 src/
   lib/
-    datasets.ts       designations checked, with weights and what each means
-    planningData.ts   API client — batched lookup, lazy boundaries, geocoding
-    appraisal.ts      scoring and the plain-English narrative
-    agentTools.ts     the same engine as JSON Schema tools for an AI agent
-    appraisal.test.ts unit tests for the scoring and narrative
-  stores/site.ts      Pinia store, aborts superseded lookups
+    datasets.ts        designations checked, with weights and what each means
+    planningData.ts    API client — batched lookup, lazy boundaries, geocoding
+    appraisal.ts       scoring and the plain-English narrative
+    agentTools.ts      the same engine as JSON Schema tools for an AI agent
+    examples.ts        the sample sites offered under the search
+    appraisal.test.ts  scoring, banding and narrative
+  stores/
+    site.ts            current lookup; aborts superseded requests
+    shortlist.ts       saved sites, ranked, persisted to localStorage
+    shortlist.test.ts  ranking, deduping and the pasteable summary
   components/
-    MapCanvas.vue     MapLibre map and boundary rendering
-    SitePanel.vue     the appraisal
-    TracePanel.vue    tool calls and manifest
+    MapCanvas.vue      MapLibre map and boundary rendering
+    SitePanel.vue      the appraisal
+    ShortlistPanel.vue saved sites, least constrained first
+    TracePanel.vue     tool calls and manifest
+    InfoOverlay.vue    what this is, and how it is built
 ```
+
+Deployment is a GitHub Actions workflow: it runs the tests and the type check, builds, and
+publishes to GitHub Pages on every push to `main`.
 
 ## Not included
 

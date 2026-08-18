@@ -7,7 +7,8 @@ export default defineConfig({
   base: process.env.GITHUB_PAGES ? '/LandDemo/' : '/',
   plugins: [vue(), tailwindcss()],
   test: {
-    environment: 'node',
+    // The shortlist store persists to localStorage, so its tests need a DOM.
+    environment: 'jsdom',
     include: ['src/**/*.test.ts'],
   },
 })

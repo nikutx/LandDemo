@@ -10,6 +10,7 @@
 import { CONSTRAINT_DATASETS } from './datasets'
 import { appraise } from './appraisal'
 import { geocode, lookupSite, type LatLng } from './planningData'
+import { scanNearby } from './scan'
 
 export interface ToolDefinition {
   name: string
@@ -42,6 +43,23 @@ export const TOOL_MANIFEST: ToolDefinition[] = [
     inputSchema: {
       type: 'object',
       properties: POINT_PROPERTIES,
+      required: ['latitude', 'longitude'],
+    },
+  },
+  {
+    name: 'find_easier_nearby',
+    description:
+      'Sample the land around a point and return any of it that is less constrained, ' +
+      'nearest and easiest first, with the distance and direction from the starting point.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ...POINT_PROPERTIES,
+        radius: {
+          type: 'number',
+          description: 'How far out to look, in metres. Defaults to 2000.',
+        },
+      },
       required: ['latitude', 'longitude'],
     },
   },
@@ -105,6 +123,31 @@ export async function callTool(name: string, args: ToolArgs = {}): Promise<unkno
         designations: appraisal.drivers.map((c) => c.dataset.label),
         nextSteps: appraisal.nextSteps,
         sources: ['planning.data.gov.uk', 'postcodes.io'],
+      }
+    }
+
+    case 'find_easier_nearby': {
+      const origin = requirePoint(args)
+      const radius = Number(args.radius)
+      const lookup = await lookupSite(origin)
+      const here = appraise(lookup)
+
+      const candidates = await scanNearby(origin, here.score, {
+        radius: Number.isFinite(radius) && radius > 0 ? radius : 2000,
+      })
+
+      return {
+        from: { score: here.score, verdict: here.verdict },
+        found: candidates.length,
+        candidates: candidates.map((candidate) => ({
+          latitude: candidate.point.lat,
+          longitude: candidate.point.lng,
+          score: candidate.score,
+          verdict: candidate.headline,
+          designations: candidate.designations,
+          metresAway: candidate.distance,
+          direction: candidate.bearing,
+        })),
       }
     }
 

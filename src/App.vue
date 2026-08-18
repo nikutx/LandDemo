@@ -7,6 +7,8 @@ import TracePanel from './components/TracePanel.vue'
 import InfoOverlay, { type InfoTab } from './components/InfoOverlay.vue'
 import { DEFAULT_POINT, useSiteStore } from './stores/site'
 import { EXAMPLE_SITES } from './lib/examples'
+import ShortlistPanel from './components/ShortlistPanel.vue'
+import { useShortlistStore } from './stores/shortlist'
 
 const store = useSiteStore()
 const { point, loading } = storeToRefs(store)
@@ -16,6 +18,8 @@ const REPO = 'https://github.com/nikutx/LandDemo'
 const query = ref('')
 const searching = ref(false)
 const infoTab = ref<InfoTab | null>(null)
+const shortlistOpen = ref(false)
+const shortlist = useShortlistStore()
 
 async function runSearch() {
   if (!query.value.trim() || searching.value) return
@@ -79,6 +83,18 @@ watch(point, (next) => {
             class="flex items-center gap-1 rounded-xl bg-white/95 px-1.5 py-1.5 text-xs font-medium text-slate-500 shadow-lg shadow-slate-900/5 backdrop-blur"
           >
             <button
+              class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition hover:bg-slate-100 hover:text-slate-900"
+              @click="shortlistOpen = !shortlistOpen"
+            >
+              Shortlist
+              <span
+                v-if="shortlist.count"
+                class="rounded-full bg-slate-900 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white"
+              >
+                {{ shortlist.count }}
+              </span>
+            </button>
+            <button
               class="rounded-lg px-2.5 py-1.5 transition hover:bg-slate-100 hover:text-slate-900"
               @click="infoTab = 'about'"
             >
@@ -135,6 +151,8 @@ watch(point, (next) => {
     >
       <SitePanel />
     </div>
+
+    <ShortlistPanel :open="shortlistOpen" @close="shortlistOpen = false" />
 
     <InfoOverlay :tab="infoTab" @close="infoTab = null" @select="infoTab = $event" />
   </div>

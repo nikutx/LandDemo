@@ -14,7 +14,7 @@ import {
 // tile loading is delegated to a worker that never started. Handing MapLibre an
 // explicit URL for its shipped worker makes dev and production agree.
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-csp-worker.js?url'
-import type { Feature, FeatureCollection } from 'geojson'
+import type { Feature, FeatureCollection, Point } from 'geojson'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { DEFAULT_POINT, useSiteStore } from '../stores/site'
@@ -23,7 +23,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 setWorkerUrl(workerUrl)
 
 const store = useSiteStore()
-const { point, boundaries } = storeToRefs(store)
+const { point, boundaries, candidates } = storeToRefs(store)
 
 const container = ref<HTMLDivElement | null>(null)
 let map: MapLibreMap | null = null
@@ -31,6 +31,15 @@ let marker: Marker | null = null
 let resizeObserver: ResizeObserver | null = null
 
 const CONSTRAINT_SOURCE = 'constraint-boundaries'
+const CANDIDATE_SOURCE = 'nearby-candidates'
+
+/** Green through amber, matching the score bands used in the panel. */
+function scoreColor(score: number): string {
+  if (score === 0) return '#10b981'
+  if (score <= 20) return '#84cc16'
+  if (score <= 45) return '#f59e0b'
+  return '#f97316'
+}
 
 /**
  * Redraw the designation boundaries returned for the current point.
@@ -52,6 +61,23 @@ function renderBoundaries() {
 
   const collection: FeatureCollection = { type: 'FeatureCollection', features }
   source.setData(collection)
+}
+
+/** Plot the less-constrained land found around the current site. */
+function renderCandidates() {
+  const source = map?.getSource(CANDIDATE_SOURCE) as GeoJSONSource | undefined
+  if (!source) return
+
+  const features: Feature[] = candidates.value.map((candidate) => ({
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [candidate.point.lng, candidate.point.lat] },
+    properties: {
+      color: scoreColor(candidate.score),
+      label: `${candidate.score}`,
+    },
+  }))
+
+  source.setData({ type: 'FeatureCollection', features })
 }
 
 onMounted(() => {
@@ -86,7 +112,52 @@ onMounted(() => {
       paint: { 'line-color': ['get', 'color'], 'line-width': 2.5, 'line-opacity': 0.9 },
     })
 
+    instance.addSource(CANDIDATE_SOURCE, {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [] },
+    })
+    instance.addLayer({
+      id: 'candidate-halo',
+      type: 'circle',
+      source: CANDIDATE_SOURCE,
+      paint: {
+        'circle-radius': 15,
+        'circle-color': ['get', 'color'],
+        'circle-opacity': 0.22,
+      },
+    })
+    instance.addLayer({
+      id: 'candidate-dot',
+      type: 'circle',
+      source: CANDIDATE_SOURCE,
+      paint: {
+        'circle-radius': 11,
+        'circle-color': ['get', 'color'],
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#ffffff',
+      },
+    })
+    instance.addLayer({
+      id: 'candidate-label',
+      type: 'symbol',
+      source: CANDIDATE_SOURCE,
+      layout: {
+        'text-field': ['get', 'label'],
+        'text-size': 11,
+        'text-font': ['Noto Sans Bold'],
+        'text-allow-overlap': true,
+      },
+      paint: { 'text-color': '#ffffff' },
+    })
+
+    instance.on('click', 'candidate-dot', (event) => {
+      const [lng, lat] = (event.features?.[0]?.geometry as Point).coordinates
+      store.select({ lat, lng })
+      event.originalEvent.stopPropagation()
+    })
+
     renderBoundaries()
+    renderCandidates()
   })
 
   instance.on('click', (event) => {
@@ -127,6 +198,7 @@ watch(point, (next) => {
 })
 
 watch(boundaries, renderBoundaries)
+watch(candidates, renderCandidates)
 </script>
 
 <template>
