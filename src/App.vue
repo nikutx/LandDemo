@@ -89,18 +89,6 @@ watch(point, (next) => {
             class="flex items-center gap-1 rounded-xl bg-white/95 px-1.5 py-1.5 text-xs font-medium text-slate-500 shadow-lg shadow-slate-900/5 backdrop-blur"
           >
             <button
-              class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition hover:bg-slate-100 hover:text-slate-900"
-              @click="shortlistOpen = !shortlistOpen"
-            >
-              Shortlist
-              <span
-                v-if="shortlist.count"
-                class="rounded-full bg-slate-900 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white"
-              >
-                {{ shortlist.count }}
-              </span>
-            </button>
-            <button
               class="rounded-lg px-2.5 py-1.5 transition hover:bg-slate-100 hover:text-slate-900"
               @click="infoTab = 'about'"
             >
@@ -145,6 +133,33 @@ watch(point, (next) => {
           </button>
         </div>
       </div>
+
+      <button
+        class="absolute right-4 top-4 z-40 flex items-center gap-2 rounded-xl bg-white/95 px-3.5 py-2.5 text-xs font-medium text-slate-700 shadow-lg shadow-slate-900/5 backdrop-blur transition hover:text-slate-900"
+        :class="shortlistOpen ? 'ring-2 ring-slate-900' : ''"
+        :aria-expanded="shortlistOpen"
+        @click="shortlistOpen = !shortlistOpen"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          class="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M4 7h9M4 12h6M4 17h12M17 4v9M17 13l-2.5-2.5M17 13l2.5-2.5" />
+        </svg>
+        Shortlist
+        <span
+          v-if="shortlist.count"
+          class="rounded-full bg-slate-900 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white"
+        >
+          {{ shortlist.count }}
+        </span>
+      </button>
 
       <div class="pointer-events-none absolute bottom-4 left-4 z-10">
         <TracePanel />
