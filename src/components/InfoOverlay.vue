@@ -59,7 +59,7 @@ const answers = [
 const stats = [
   { value: '1,652', label: 'lines of code' },
   { value: '~2 hrs', label: 'empty folder to live' },
-  { value: '9', label: 'unit tests, green' },
+  { value: '12', label: 'unit tests, green' },
   { value: '16', label: 'datasets queried' },
 ]
 
@@ -142,7 +142,7 @@ watch(
             aria-label="Close"
             @click="emit('close')"
           >
-            <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8">
+            <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
               <path d="M5 5l10 10M15 5L5 15" stroke-linecap="round" />
             </svg>
           </button>
@@ -179,6 +179,7 @@ watch(
                   stroke-width="1.6"
                   stroke-linecap="round"
                   stroke-linejoin="round"
+                  aria-hidden="true"
                 >
                   <path :d="item.icon" />
                 </svg>
@@ -204,6 +205,7 @@ watch(
                   stroke-width="1.6"
                   stroke-linecap="round"
                   stroke-linejoin="round"
+                  aria-hidden="true"
                 >
                   <path :d="item.icon" />
                 </svg>

@@ -56,11 +56,12 @@ watch(point, (next) => {
           <div
             class="flex flex-1 items-center gap-2 rounded-xl bg-white/95 px-3.5 py-2.5 shadow-lg shadow-slate-900/5 backdrop-blur"
           >
-            <span class="text-sm font-semibold tracking-tight text-slate-900">LandDemo</span>
-            <span class="h-4 w-px bg-slate-200" />
+            <h1 class="text-sm font-semibold tracking-tight text-slate-900">LandDemo</h1>
+            <span class="h-4 w-px bg-slate-200" aria-hidden="true" />
             <input
               v-model="query"
               type="search"
+              aria-label="Search for a UK postcode or place"
               placeholder="Postcode or place — or click the map"
               class="min-w-0 flex-1 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
               @keyup.enter="runSearch"

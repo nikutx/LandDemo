@@ -72,7 +72,7 @@ async function copyLink() {
 
     <template v-else-if="appraisal">
       <section class="flex items-center gap-5 px-6 py-6">
-        <svg viewBox="0 0 80 80" class="h-20 w-20 shrink-0 -rotate-90">
+        <svg viewBox="0 0 80 80" class="h-20 w-20 shrink-0 -rotate-90" aria-hidden="true">
           <circle cx="40" cy="40" r="34" fill="none" stroke="#e2e8f0" stroke-width="8" />
           <circle
             cx="40"
@@ -124,6 +124,7 @@ async function copyLink() {
                 <svg
                   viewBox="0 0 24 24"
                   class="h-3 w-3 shrink-0 opacity-50"
+                  aria-hidden="true"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="2"
@@ -186,6 +187,7 @@ async function copyLink() {
             stroke="currentColor"
             stroke-width="1.7"
             stroke-linecap="round"
+            aria-hidden="true"
           >
             <path
               d="M10 13a4 4 0 0 0 5.66 0l3-3A4 4 0 0 0 13 4.34l-1.5 1.5M14 11a4 4 0 0 0-5.66 0l-3 3A4 4 0 0 0 11 19.66l1.5-1.5"
