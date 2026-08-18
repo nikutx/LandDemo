@@ -57,7 +57,13 @@ watch(point, (next) => {
 </script>
 
 <template>
-  <div class="flex h-screen flex-col overflow-hidden bg-slate-100 lg:flex-row">
+  <!--
+    `relative` matters here: the shortlist slides in from `translate-x-full`,
+    and without a positioning context it overflows the document rather than this
+    box. A scrollbar then flashes in and out for the length of the animation and
+    the whole page jumps.
+  -->
+  <div class="relative flex h-screen flex-col overflow-hidden bg-slate-100 lg:flex-row">
     <main class="relative min-h-0 flex-1">
       <MapCanvas />
 

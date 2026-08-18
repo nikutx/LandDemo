@@ -75,8 +75,8 @@ const answers = [
 ]
 
 const stats = [
-  { value: '2,681', label: 'lines of code' },
-  { value: '~4 hrs', label: 'empty folder to live' },
+  { value: '2,797', label: 'lines of code' },
+  { value: '3h 15m', label: 'first commit to deployed' },
   { value: '17', label: 'unit tests, green' },
   { value: '16', label: 'datasets queried' },
 ]
@@ -401,16 +401,28 @@ watch(
             <div class="mt-10 rounded-xl border border-sky-400/25 bg-sky-400/[0.06] p-5">
               <h3 class="font-medium text-white">How it was actually written</h3>
               <p class="mt-2 text-sm leading-relaxed text-slate-300">
-                With AI agents, not typed by hand — from empty folder to deployed in about two
-                hours. I set the direction, review every diff and verify the result in a browser
-                before it counts as done.
+                With AI agents, not typed by hand. One evening: three hours and a quarter from the
+                first commit to the deployed site, across eleven commits — the timestamps are in
+                the repository if you want to check them.
               </p>
               <p class="mt-3 text-sm leading-relaxed text-slate-400">
-                That last part is the job. The three real bugs here were all silent ones a passing
-                build would have hidden: a bundler that never emitted MapLibre's tile worker, a
-                readiness check that quietly dropped every boundary update, and a megabyte of
-                geometry being downloaded to write one sentence. Agents write quickly; someone still
-                has to notice the map is empty.
+                My own hands-on time was a good deal less than that, and I would rather say so than
+                imply otherwise. A fair amount of the evening went on reading about land
+                development, which is the part I actually needed to learn. What I contributed was
+                direction, the product decisions, reviewing every diff, and using the thing like a
+                stranger would.
+              </p>
+              <p class="mt-3 text-sm leading-relaxed text-slate-400">
+                That last part earned its keep. Three of the bugs were silent ones a passing build
+                would have hidden — a bundler that never emitted MapLibre's tile worker, a readiness
+                check that quietly dropped every boundary update, and a megabyte of geometry fetched
+                to write one sentence. Three more were only visible by using it: the search results
+                were being thrown away at the moment you clicked one, the shortlist covered the
+                answer it was supposed to help you read, and a local function named
+                <span class="font-mono text-[13px] text-slate-300">open()</span> shadowed the
+                <span class="font-mono text-[13px] text-slate-300">open</span> prop, so a panel
+                rendered permanently. Agents write quickly. Someone still has to notice the map is
+                empty.
               </p>
             </div>
           </template>

@@ -42,14 +42,14 @@ function revisit(id: string) {
 
 <template>
   <Transition
-    enter-active-class="transition duration-200 ease-out"
+    enter-active-class="transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
     enter-from-class="translate-x-full"
-    leave-active-class="transition duration-150 ease-in"
+    leave-active-class="transition-transform duration-200 ease-in will-change-transform"
     leave-to-class="translate-x-full"
   >
     <aside
       v-if="open"
-      class="absolute inset-y-0 right-0 z-30 flex w-[min(28rem,100%)] flex-col border-l border-slate-200 bg-white shadow-2xl"
+      class="absolute inset-y-0 right-0 z-30 flex w-full flex-col border-l border-slate-200 bg-white shadow-2xl lg:w-[420px]"
     >
       <header class="flex shrink-0 items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
         <div>
