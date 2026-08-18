@@ -5,13 +5,22 @@ import {
   Marker,
   NavigationControl,
   ScaleControl,
+  setWorkerUrl,
   type LngLatLike,
 } from 'maplibre-gl'
+// MapLibre decodes vector tiles in a web worker. Dependency pre-bundling
+// rewrites the library without emitting that worker beside it, so in dev the
+// worker fails to load and the map renders no tiles at all — silently, because
+// tile loading is delegated to a worker that never started. Handing MapLibre an
+// explicit URL for its shipped worker makes dev and production agree.
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-csp-worker.js?url'
 import type { Feature, FeatureCollection } from 'geojson'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { DEFAULT_POINT, useSiteStore } from '../stores/site'
 import 'maplibre-gl/dist/maplibre-gl.css'
+
+setWorkerUrl(workerUrl)
 
 const store = useSiteStore()
 const { point, boundaries } = storeToRefs(store)
