@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref, shallowRef } from 'vue'
-import { appraise, type Appraisal } from '../lib/appraisal'
+import { appraise, describeLocation, type Appraisal } from '../lib/appraisal'
 import { scanNearby, type ScanCandidate } from '../lib/scan'
 import {
   fetchBoundaries,
@@ -13,6 +13,15 @@ import {
 
 /** Cirencester — the demo opens on Cotswolds AONB and a conservation area. */
 export const DEFAULT_POINT: LatLng = { lat: 51.7157, lng: -1.9756 }
+
+const EMPTY_CONTEXT = {
+  postcode: null,
+  district: null,
+  parish: null,
+  ward: null,
+  region: null,
+  constituency: null,
+}
 
 export const useSiteStore = defineStore('site', () => {
   const point = ref<LatLng | null>(null)
@@ -27,6 +36,8 @@ export const useSiteStore = defineStore('site', () => {
   const scanProgress = ref(0)
   const scanRadius = ref(2000)
   const scanned = ref(false)
+  /** The site a completed search was run from, so its results stay attributable. */
+  const scanOrigin = ref<{ point: LatLng; place: string } | null>(null)
   let scanController: AbortController | null = null
 
   /** Lets a newer click cancel the in-flight lookup of an older one. */
@@ -40,11 +51,16 @@ export const useSiteStore = defineStore('site', () => {
     const controller = new AbortController()
     inFlight = controller
 
-    // A new site invalidates any search for easier land around the old one.
-    scanController?.abort()
-    candidates.value = []
-    scanning.value = false
-    scanned.value = false
+    // Completed results survive the move, because the reason to click a
+    // suggestion is to look at it and then come back to the others. A search
+    // still running is abandoned, since half a comparison is worse than none.
+    if (scanning.value) {
+      scanController?.abort()
+      scanning.value = false
+      candidates.value = []
+      scanned.value = false
+      scanOrigin.value = null
+    }
 
     point.value = next
     loading.value = true
@@ -101,6 +117,10 @@ export const useSiteStore = defineStore('site', () => {
     scanned.value = false
     scanProgress.value = 0
     candidates.value = []
+    scanOrigin.value = {
+      point: origin,
+      place: describeLocation(lookup.value?.context ?? EMPTY_CONTEXT) || 'this site',
+    }
 
     try {
       const found = await scanNearby(origin, current.score, {
@@ -133,6 +153,7 @@ export const useSiteStore = defineStore('site', () => {
     scanProgress,
     scanRadius,
     scanned,
+    scanOrigin,
     select,
     search,
     findEasierNearby,

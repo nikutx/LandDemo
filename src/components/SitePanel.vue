@@ -5,12 +5,42 @@ import { useSiteStore } from '../stores/site'
 import { CONSTRAINT_DATASETS } from '../lib/datasets'
 import { describeLocation, verdictFor, type Verdict } from '../lib/appraisal'
 import { useShortlistStore } from '../stores/shortlist'
+import type { LatLng } from '../lib/planningData'
+import type { ScanCandidate } from '../lib/scan'
 
 const datasetCount = CONSTRAINT_DATASETS.length
 
 const store = useSiteStore()
-const { lookup, appraisal, loading, error, point, candidates, scanning, scanProgress, scanRadius, scanned } =
-  storeToRefs(store)
+const {
+  lookup,
+  appraisal,
+  loading,
+  error,
+  point,
+  candidates,
+  scanning,
+  scanProgress,
+  scanRadius,
+  scanned,
+  scanOrigin,
+} = storeToRefs(store)
+
+/** Points within a few metres are the same place, as far as a person is concerned. */
+function samePlace(a: LatLng, b: LatLng) {
+  return Math.abs(a.lat - b.lat) < 0.0002 && Math.abs(a.lng - b.lng) < 0.0002
+}
+
+const isCurrent = (candidate: ScanCandidate) =>
+  point.value ? samePlace(candidate.point, point.value) : false
+
+/** True when the panel is describing one of the search results, not its origin. */
+const viewingResult = computed(
+  () =>
+    candidates.value.length > 0 &&
+    !!point.value &&
+    !!scanOrigin.value &&
+    !samePlace(point.value, scanOrigin.value.point),
+)
 
 const RADIUS_OPTIONS = [
   { value: 1000, label: '1 km' },
@@ -207,12 +237,29 @@ async function copyLink() {
         </ol>
       </section>
 
-      <section v-if="appraisal.score > 0" class="border-t border-slate-200 px-6 py-5">
+      <section
+        v-if="appraisal.score > 0 || candidates.length"
+        class="border-t border-slate-200 px-6 py-5"
+      >
         <h3 class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-          Somewhere easier nearby?
+          {{ viewingResult ? 'Options from your search' : 'Somewhere easier nearby?' }}
         </h3>
+        <p v-if="viewingResult && scanOrigin" class="mt-1 text-xs text-slate-400">
+          Around {{ scanOrigin.place }}
+        </p>
 
-        <div class="mt-3 flex gap-1.5">
+        <button
+          v-if="viewingResult && scanOrigin"
+          class="mt-3 flex w-full items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-left text-sm text-slate-600 transition hover:border-slate-400 hover:bg-slate-50"
+          @click="store.select(scanOrigin.point)"
+        >
+          <svg viewBox="0 0 24 24" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10 5 3 12l7 7M3 12h18" />
+          </svg>
+          Back to {{ scanOrigin.place }}
+        </button>
+
+        <div v-show="!viewingResult" class="mt-3 flex gap-1.5">
           <button
             v-for="option in RADIUS_OPTIONS"
             :key="option.value"
@@ -230,6 +277,7 @@ async function copyLink() {
         </div>
 
         <button
+          v-if="!viewingResult"
           class="mt-2 w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 disabled:opacity-60"
           :disabled="scanning"
           @click="store.findEasierNearby()"
@@ -247,12 +295,20 @@ async function copyLink() {
         <ul v-if="candidates.length" class="mt-4 space-y-2">
           <li v-for="candidate in candidates.slice(0, 5)" :key="candidate.bearing + candidate.distance">
             <button
-              class="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-left transition hover:border-slate-400 hover:bg-slate-50"
+              class="w-full rounded-lg border px-3 py-2.5 text-left transition"
+              :class="
+                isCurrent(candidate)
+                  ? 'border-slate-900 bg-slate-50'
+                  : 'border-slate-200 hover:border-slate-400 hover:bg-slate-50'
+              "
               @click="store.select(candidate.point)"
             >
               <div class="flex items-baseline justify-between gap-2">
                 <span class="text-sm font-medium text-slate-900">
                   {{ formatDistance(candidate.distance) }} {{ candidate.bearing }}
+                  <span v-if="isCurrent(candidate)" class="ml-1 text-xs font-normal text-slate-400">
+                    — you're here
+                  </span>
                 </span>
                 <span class="font-mono text-xs" :style="{ color: scoreColor(candidate.score) }">
                   {{ candidate.score }}/100
@@ -276,6 +332,14 @@ async function copyLink() {
         <p v-else-if="!scanning" class="mt-2 text-xs leading-relaxed text-slate-400">
           Samples twelve points around this one and reports any that are less constrained.
         </p>
+
+        <button
+          v-if="viewingResult"
+          class="mt-3 w-full rounded-lg border border-slate-300 px-4 py-2 text-xs font-medium text-slate-600 transition hover:border-slate-400 hover:bg-slate-50"
+          @click="store.findEasierNearby()"
+        >
+          Search around this one instead
+        </button>
       </section>
 
       <section class="border-t border-slate-200 px-6 py-5">
