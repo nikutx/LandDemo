@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import MapCanvas from './components/MapCanvas.vue'
 import SitePanel from './components/SitePanel.vue'
 import TracePanel from './components/TracePanel.vue'
+import StoryPage from './components/StoryPage.vue'
 import { DEFAULT_POINT, useSiteStore } from './stores/site'
 
 const store = useSiteStore()
@@ -49,7 +50,7 @@ watch(point, (next) => {
 </script>
 
 <template>
-  <div class="flex h-screen flex-col bg-slate-100 lg:flex-row">
+  <div class="flex h-screen flex-col bg-slate-100 lg:flex-row" id="demo">
     <main class="relative min-h-0 flex-1">
       <MapCanvas />
 
@@ -88,6 +89,14 @@ watch(point, (next) => {
       <div class="pointer-events-none absolute bottom-4 left-4 z-10">
         <TracePanel />
       </div>
+
+      <a
+        href="#story"
+        class="absolute bottom-5 left-1/2 z-10 hidden -translate-x-1/2 items-center gap-2 rounded-full bg-slate-900/90 px-4 py-2 text-xs font-medium text-white shadow-lg backdrop-blur transition hover:bg-slate-900 lg:inline-flex"
+      >
+        How it's built
+        <span aria-hidden="true">↓</span>
+      </a>
     </main>
 
     <div
@@ -95,5 +104,9 @@ watch(point, (next) => {
     >
       <SitePanel />
     </div>
+  </div>
+
+  <div id="story">
+    <StoryPage />
   </div>
 </template>
