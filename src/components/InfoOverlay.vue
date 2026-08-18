@@ -75,8 +75,8 @@ const answers = [
 ]
 
 const stats = [
-  { value: '2,797', label: 'lines of code' },
-  { value: '3h 15m', label: 'first commit to deployed' },
+  { value: '2,815', label: 'lines of code' },
+  { value: '3h 24m', label: 'first commit to deployed' },
   { value: '17', label: 'unit tests, green' },
   { value: '16', label: 'datasets queried' },
 ]
@@ -401,8 +401,8 @@ watch(
             <div class="mt-10 rounded-xl border border-sky-400/25 bg-sky-400/[0.06] p-5">
               <h3 class="font-medium text-white">How it was actually written</h3>
               <p class="mt-2 text-sm leading-relaxed text-slate-300">
-                With AI agents, not typed by hand. One evening: three hours and a quarter from the
-                first commit to the deployed site, across eleven commits — the timestamps are in
+                With AI agents, not typed by hand. One evening: three and a half hours from the
+                first commit to the deployed site, across twelve commits — the timestamps are in
                 the repository if you want to check them.
               </p>
               <p class="mt-3 text-sm leading-relaxed text-slate-400">
